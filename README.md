@@ -10,8 +10,8 @@ The assumption here is that there are no adversarial parties participating in th
 
 Additionally, there are minimal, pure-Python implementations of some supporting primitives:
 
-- [Paillier public key cryptosystem] (https://en.wikipedia.org/wiki/Paillier_cryptosystem)
-- [Shamir Secret Sharing] (https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing)
+- [Paillier public key cryptosystem](https://en.wikipedia.org/wiki/Paillier_cryptosystem)
+- [Shamir Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing)
 - Elliptic curve arithmetic helpers 
 - Modular aithmetic helpers 
 
