@@ -1,8 +1,5 @@
 import unittest
 from pytss.elliptic_curve import (
-    EllipticCurve,
-    FieldElement,
-    PrimeGaloisField,
     Point,
     Signature,
     PrivateKey,
@@ -11,8 +8,9 @@ from pytss.elliptic_curve import (
 from pytss.common_crypto import (
     gen_random_int
 )
-from pytss.utils import (
-    int_to_hex_str
+from pytss.encoding import (
+    encode_public_key_to_pem,
+    encode_secret_key_to_pem
 )
 
 G = Point(
@@ -59,5 +57,24 @@ class TestEllipticCurve(unittest.TestCase):
         signature: Signature = e.sign(z)
         self.assertTrue(signature.verify(z, pub))
 
-        print(int_to_hex_str(signature, num_bits=256))
-        print(int_to_hex_str(pub, num_bits=256))
+    def test_pem_encoding(self):
+        sec = PrivateKey(gen_random_int(0, N), G, N)
+        pub = sec.secret * G  # public point corresponding to e
+
+        pub_pem = encode_public_key_to_pem(pub)
+
+        print(pub_pem)
+
+        sec_pem = encode_secret_key_to_pem(sec)
+
+        print(sec_pem)
+
+        from ellipticcurve.publicKey import PublicKey as libPublicKey
+        from ellipticcurve.privateKey import PrivateKey as libPrivateKey
+
+        converted_sec_pem = libPrivateKey.fromPem(sec_pem)
+        self.assertEqual(converted_sec_pem.secret, sec.secret)
+
+        converted_pub_pem = libPublicKey.fromPem(pub_pem)
+        self.assertEqual(converted_pub_pem.point.x, pub.x.value)
+        self.assertEqual(converted_pub_pem.point.y, pub.y.value)
