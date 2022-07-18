@@ -44,7 +44,6 @@ class PaillierPublicKey:
 
     def homomorphic_add(self, ct: int, pt: int) -> int:
         return (ct * self.encrypt(pt)) % self.n_squared
-
         
 class PaillierPrivateKey:
 

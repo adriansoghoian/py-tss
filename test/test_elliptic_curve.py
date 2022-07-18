@@ -62,12 +62,7 @@ class TestEllipticCurve(unittest.TestCase):
         pub = sec.secret * G  # public point corresponding to e
 
         pub_pem = encode_public_key_to_pem(pub)
-
-        print(pub_pem)
-
         sec_pem = encode_secret_key_to_pem(sec)
-
-        print(sec_pem)
 
         from ellipticcurve.publicKey import PublicKey as libPublicKey
         from ellipticcurve.privateKey import PrivateKey as libPrivateKey
