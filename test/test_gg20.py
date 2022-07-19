@@ -120,20 +120,20 @@ class TestGG20(unittest.TestCase):
 
         ## SIGNING ## 
         chosen_participant_ids = [1, 2, 3]
+        message = gen_random_int(0, 2 ** params.security_parameter)
         print(f'Initiating MPC signing across {params.threshold} participants of {params.party_size} total\n')
 
         signing_participants: List[Participant] = [ each for each in participants if each.participant_id in chosen_participant_ids ]
         for each in signing_participants:
-            each.signing_part1(set(chosen_participant_ids))
+            each.prepare_for_signing(message, set(chosen_participant_ids))
         
+        for each in signing_participants:
+            each.sign()
+
         ## Check that the additive share stuff work
         private_key_2 = sum([each.signing_state.w for each in participants if each.participant_id in chosen_participant_ids])
         self._test_signature(public_key, private_key_2)
         
-        # Perform signing now...
-        for each in signing_participants:
-            each.signing_part2()
-
         # Check that the first mToA protocol worked...
         participant_1 = participants[0]
         participant_2 = participants[1]
@@ -164,14 +164,13 @@ class TestGG20(unittest.TestCase):
 
         self.assertEqual(new_x, x)
 
-        # Onto part 3! 
-        for each in signing_participants:
-            each.signing_part3()
-
         # Check that each party broadcast delta_i, and computed sum(delta_i)
         # correctly
         delta = None 
         for each in signing_participants:
+            print(each.participant_id)
+            print(each.signing_state)
+            print(each.signing_state.delta_by_id)
             self.assertTrue(each.signing_state.delta)
             if delta is None:
                 delta = each.signing_state.delta
@@ -185,12 +184,6 @@ class TestGG20(unittest.TestCase):
         self.assertEqual(delta % params.ec_n, (sum_k_i * sum_gamma_i) % params.ec_n)
 
         # Now check the actual signature
-        message = gen_random_int(0, 2 ** params.security_parameter)
-        print(f'Signing message {message}\n')
-
-        for each in signing_participants:
-            each.produce_signature(message)
-
         sigs: List[Signature] = [ each.signature() for each in signing_participants ]
         print(f'Sample signature: {sigs[0]}\n')
 

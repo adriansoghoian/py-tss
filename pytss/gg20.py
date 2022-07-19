@@ -114,6 +114,7 @@ class KeyGenState:
 class SigningState:
     w: int
     k: int
+    message: int
 
     gamma: int
     gamma_elliptic: Point 
@@ -261,6 +262,9 @@ class Participant():
                 self.key_gen_state.big_x = self.key_gen_state.x * self.party_parameters.ec_g
 
         elif isinstance(message, MtoAP2P1):
+            if self.signing_state is None:
+                self._setup_signing()
+
             sender_pk = self.key_gen_state.other_paillier_public_keys_by_id[sender_id]
 
             beta_prime = gen_random_int(1, 2 ** (5 * self.party_parameters.security_parameter))
@@ -297,23 +301,30 @@ class Participant():
                 MtoAP2P2Response(cipher_b)
             )
 
+            if self._did_finish_mtoa_2_sequences():
+                self._continue_signing_post_mtoa() 
+
         elif isinstance(message, MtoAP2P2Response):
             decrypted = self.key_gen_state.paillier_secret_key.decrypt(message.encrypted_value)
             alpha = decrypted % self.party_parameters.ec_n
             self.signing_state.mToA_outputs_as_initiator_2[sender_id] = alpha
 
+            if self._did_finish_mtoa_2_sequences():
+                self._continue_signing_post_mtoa() 
+
         elif isinstance(message, SigningPostMtoABroadcast):
             if not self.signing_state:
                 return 
-
-            self.signing_state.delta_by_id[sender_id] = message.delta_i
-            if len(self.signing_state.delta_by_id) == len(self.signing_state.signer_ids):
-                self.signing_state.delta = sum(self.signing_state.delta_by_id.values()) % self.party_parameters.ec_n
 
             if self.signing_state.gamma_elliptic_summation is None:
                 self.signing_state.gamma_elliptic_summation = Point(x=None, y=None, curve=self.party_parameters.ec)
 
             self.signing_state.gamma_elliptic_summation += message.gamma_elliptic
+
+            self.signing_state.delta_by_id[sender_id] = message.delta_i
+            if len(self.signing_state.delta_by_id) == len(self.signing_state.signer_ids):
+                self.signing_state.delta = sum(self.signing_state.delta_by_id.values()) % self.party_parameters.ec_n
+                self._produce_signature()
 
         elif isinstance(message, SigningShare):
             if not self.signing_state:
@@ -321,14 +332,20 @@ class Participant():
 
             self.signing_state.s_by_id[sender_id] = message.share
 
-    def signing_part1(self, signer_ids: Set[int]) -> Signature:
-        assert self.participant_id in signer_ids
-        logger.debug(f'Partipant {self.participant_id}: signing part 1')
+    def _did_finish_mtoa_2_sequences(self):
+        threshold = len(self.signing_state.signer_ids) - 1 # every p2p but themselves
+        return len(self.signing_state.mToA_outputs_as_receiver_2) == threshold and len(self.signing_state.mToA_outputs_as_initiator_2) == threshold
+
+    def prepare_for_signing(self, message: int, signer_ids: Set[int]):
+        assert self.signing_state is None 
+
+        logger.debug(f'Partipant {self.participant_id}: setting uup signing parameters')
 
         # reset signing state 
         self.signing_state = SigningState(
             w=None,
             k=None,
+            message=message,
             gamma=None,
             sigma=None,
             sigma_i=None,
@@ -360,17 +377,17 @@ class Participant():
         self.signing_state.gamma = gen_random_int(1, self.party_parameters.ec_n)
         self.signing_state.gamma_elliptic = self.signing_state.gamma * self.party_parameters.ec_g
 
-    def signing_part2(self) -> Signature:
+    def sign(self):
         assert self.signing_state is not None
-        assert self.participant_id in self.signing_state.signer_ids
 
-        logger.debug(f'Partipant {self.participant_id}: signing part 2')
+        logger.debug(f'Partipant {self.participant_id}: beginning MtoA sequences')
 
         encrypted_k = self.key_gen_state.paillier_public_key.encrypt(self.signing_state.k)
 
         for participant_id in range(1, self.party_parameters.party_size + 1):
             if participant_id not in self.signing_state.signer_ids or participant_id == self.participant_id:
                 continue 
+            print("yollooooo")
 
             # multiplication to addition share protocol 1 
             self.delegate.send(
@@ -386,11 +403,13 @@ class Participant():
                 MtoAP2P2(encrypted_k)
             )
 
-    def signing_part3(self):
+    def _continue_signing_post_mtoa(self):
         assert self.signing_state is not None
         assert self.participant_id in self.signing_state.signer_ids
 
-        logger.debug(f'Partipant {self.participant_id}: signing part 3')
+        logger.debug(f'Partipant {self.participant_id}: signing continuing after the MtoA sequences')
+
+        print("yollooooo22222")
 
         # Compute little delta
         self.signing_state.delta_i = self.signing_state.k * self.signing_state.gamma
@@ -424,7 +443,7 @@ class Participant():
             )
         )
 
-    def produce_signature(self, message: int):
+    def _produce_signature(self):
         assert self.signing_state is not None
         assert self.participant_id in self.signing_state.signer_ids
 
@@ -437,7 +456,7 @@ class Participant():
         big_r: Point = delta_inv * self.signing_state.gamma_elliptic_summation
         self.signing_state.little_r = big_r.x.value
 
-        s = (message * self.signing_state.k + self.signing_state.little_r * self.signing_state.sigma_i) % self.party_parameters.ec_n
+        s = (self.signing_state.message * self.signing_state.k + self.signing_state.little_r * self.signing_state.sigma_i) % self.party_parameters.ec_n
         self.signing_state.s_by_id[self.participant_id] = s 
         self.delegate.broadcast(
             self.participant_id,
