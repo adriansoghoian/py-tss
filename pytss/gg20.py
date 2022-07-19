@@ -102,14 +102,11 @@ class KeyGenState:
 
     y: Point
     x: int
-    big_x: Point 
 
     other_y_by_id: Mapping[int, Point]
     other_shamir_shares_by_id: Mapping[int, int]
     other_paillier_public_keys_by_id: Mapping[int, PaillierPublicKey]
     
-    other_big_x_by_ids: Mapping[int, Point]
-
 @dataclass
 class SigningState:
     w: int
@@ -126,7 +123,6 @@ class SigningState:
     delta: int
     delta_by_id: Mapping[int, int]
 
-    sigma: int
     sigma_i: int
     little_r: int
 
@@ -158,14 +154,12 @@ class Participant():
             paillier_public_key=None,
             paillier_secret_key=None,
             x=None,
-            big_x=None,
             secret_key_share=None,
             secret_key_shamir_shares=[],
             y=None,
             other_y_by_id={},
             other_shamir_shares_by_id={},
-            other_paillier_public_keys_by_id={},
-            other_big_x_by_ids={}
+            other_paillier_public_keys_by_id={}
         )
 
         # Signing 
@@ -259,7 +253,6 @@ class Participant():
 
             if len(self.key_gen_state.other_shamir_shares_by_id) == self.party_parameters.party_size:
                 self.key_gen_state.x = sum(self.key_gen_state.other_shamir_shares_by_id.values())
-                self.key_gen_state.big_x = self.key_gen_state.x * self.party_parameters.ec_g
 
         elif isinstance(message, MtoAP2P1):
             if self.signing_state is None:
@@ -347,7 +340,6 @@ class Participant():
             k=None,
             message=message,
             gamma=None,
-            sigma=None,
             sigma_i=None,
             signer_ids=signer_ids,
             gamma_elliptic=None,
@@ -387,7 +379,6 @@ class Participant():
         for participant_id in range(1, self.party_parameters.party_size + 1):
             if participant_id not in self.signing_state.signer_ids or participant_id == self.participant_id:
                 continue 
-            print("yollooooo")
 
             # multiplication to addition share protocol 1 
             self.delegate.send(
@@ -408,8 +399,6 @@ class Participant():
         assert self.participant_id in self.signing_state.signer_ids
 
         logger.debug(f'Partipant {self.participant_id}: signing continuing after the MtoA sequences')
-
-        print("yollooooo22222")
 
         # Compute little delta
         self.signing_state.delta_i = self.signing_state.k * self.signing_state.gamma
