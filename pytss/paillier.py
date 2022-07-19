@@ -1,10 +1,10 @@
 import base64
 from typing import Tuple
-from pytss.common_crypto import (
+from .common_crypto import (
     prime_of_n_bits,
     gen_random_int
 )
-from pytss.utils import (
+from .utils import (
     chunks,
     Converters
 )

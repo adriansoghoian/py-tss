@@ -1,6 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
-from pytss.common_crypto import (
+from .common_crypto import (
     gen_random_int
 )
 

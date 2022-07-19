@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Tuple
 from fractions import Fraction
 from math import prod as list_product
-from pytss.common_crypto import (
+from .common_crypto import (
     gen_random_int
 )
-from pytss.common_math import (
+from .common_math import (
     compute_modular_inverse
 )
 
@@ -16,7 +16,7 @@ def _evaluate_polynomial(coefficients: List[int], x: int, modulus: int) -> int:
 
     return acc
 
-def split_into_shares(secret: int, n: int, t: int, finite_field_order: int) -> tuple[int, int]:
+def split_into_shares(secret: int, n: int, t: int, finite_field_order: int) -> Tuple[int, int]:
     """
         Shamir secret sharing -- masks a secret across n shares requiring a t threshold to unmask.
 
@@ -32,7 +32,7 @@ def split_into_shares(secret: int, n: int, t: int, finite_field_order: int) -> t
         (i, _evaluate_polynomial(coefficients, i, finite_field_order)) for i in range(1, n + 1)
     ]
 
-def recover_secret(shares: tuple[int, int], finite_field_order: int) -> int:
+def recover_secret(shares: Tuple[int, int], finite_field_order: int) -> int:
     secret = 0
     for i in range(len(shares)):
         l = shares[i][1]

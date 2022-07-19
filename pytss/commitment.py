@@ -1,6 +1,6 @@
 from typing import List
 from collections import namedtuple
-from pytss.common_crypto import (
+from .common_crypto import (
     sha256_values,
     gen_random_int
 )

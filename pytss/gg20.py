@@ -1,23 +1,23 @@
-from typing import List, Mapping, Optional
+from typing import List, Mapping, Optional, Tuple, Set
 import abc
 import logging
 from collections import namedtuple
-from pytss.common_crypto import (
+from .common_crypto import (
     gen_random_int
 )
-from pytss.paillier import (
+from .paillier import (
     PaillierPublicKey,
     generate_key_pair
 )
-from pytss.common_math import (
+from .common_math import (
     compute_modular_inverse
 )
-from pytss.elliptic_curve import (
+from .elliptic_curve import (
     EllipticCurve,
     Point,
     Signature
 )
-from pytss.secret_sharing import (
+from .secret_sharing import (
     split_into_shares
 )
 from dataclasses import dataclass, replace, asdict
@@ -45,7 +45,6 @@ class BaseMessage: pass
 class KeyGenBroadcast(BaseMessage):
     y: Point
     paillier_pk: PaillierPublicKey
-    vss_shares: List[Point]
 
 @dataclass
 class KeyGenP2P(BaseMessage):
@@ -99,8 +98,7 @@ class KeyGenState:
     ec_g: Point
     curve: EllipticCurve
 
-    secret_key_shamir_shares: List[tuple[int, int]]
-    secret_key_vss_shares: List[Point]
+    secret_key_shamir_shares: List[Tuple[int, int]]
 
     y: Point
     x: int
@@ -121,7 +119,7 @@ class SigningState:
     gamma_elliptic: Point 
     gamma_elliptic_summation: Point
 
-    signer_ids: set[int]
+    signer_ids: Set[int]
 
     delta_i: int
     delta: int
@@ -132,8 +130,6 @@ class SigningState:
     little_r: int
 
     s_by_id: int
-
-    big_w_by_id: Mapping[int, Point]
 
     mToA_outputs_as_initiator_1: Mapping[int, int]
     mToA_outputs_as_receiver_1: Mapping[int, int]
@@ -164,7 +160,6 @@ class Participant():
             big_x=None,
             secret_key_share=None,
             secret_key_shamir_shares=[],
-            secret_key_vss_shares=[],
             y=None,
             other_y_by_id={},
             other_shamir_shares_by_id={},
@@ -213,23 +208,12 @@ class Participant():
             y=y
         )
 
-        # Compute feldman VSS shares
-        vss_shares = []
-        for i in range(len(shamir_shares)):
-            shamir_share = shamir_shares[i][1]
-            vss_share = shamir_share * self.party_parameters.ec_g
-            vss_shares.append(vss_share)
-
-        self._update_key_gen_state(
-            secret_key_vss_shares=vss_shares
-        )
-
         # broadcast and send 
         # broadcast yi, public value, EC scalar multiplication value 
         # of secret share * EC generator point
         self.delegate.broadcast(
             self.participant_id,
-            KeyGenBroadcast(y, paillier_pub_key, vss_shares)
+            KeyGenBroadcast(y, paillier_pub_key)
         )
 
         # P2P send shamir secret share of private key share
@@ -337,7 +321,7 @@ class Participant():
 
             self.signing_state.s_by_id[sender_id] = message.share
 
-    def signing_part1(self, signer_ids: set[int]) -> Signature:
+    def signing_part1(self, signer_ids: Set[int]) -> Signature:
         assert self.participant_id in signer_ids
         logger.debug(f'Partipant {self.participant_id}: signing part 1')
 
@@ -351,7 +335,6 @@ class Participant():
             signer_ids=signer_ids,
             gamma_elliptic=None,
             gamma_elliptic_summation=None,
-            big_w_by_id={},
             delta=None,
             delta_i=None,
             delta_by_id={},
@@ -365,7 +348,6 @@ class Participant():
 
         # Convert (t, n) private share x_i of x into a (t, t+1) share of x, w_i, where 
         # sum(all(w_i)) == x (private key)
-        big_w_by_id: Mapping[int, Point] = {}
         q = self.party_parameters.ec_n
 
         w = self.key_gen_state.x
@@ -374,7 +356,6 @@ class Participant():
             w = (w * i * compute_modular_inverse(i - self.participant_id, q)) % q
             
         self.signing_state.w = w
-        self.signing_state.big_w_by_id = big_w_by_id
         self.signing_state.k = gen_random_int(1, self.party_parameters.ec_n)
         self.signing_state.gamma = gen_random_int(1, self.party_parameters.ec_n)
         self.signing_state.gamma_elliptic = self.signing_state.gamma * self.party_parameters.ec_g

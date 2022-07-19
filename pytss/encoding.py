@@ -1,4 +1,4 @@
-from pytss.elliptic_curve import (
+from .elliptic_curve import (
     Point, 
     PrivateKey
 )
