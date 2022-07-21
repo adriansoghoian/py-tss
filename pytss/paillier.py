@@ -18,14 +18,14 @@ class PaillierPublicKey:
         self.g = n + 1
         self.r = r
         self.n_squared = n * n
-        self.key_size = size
+        self.size = size
 
     def encrypt(self, pt: int) -> int:
-        assert pt.bit_length() <= self.key_size, "Plaintext too large"
+        assert pt.bit_length() <= self.size, "Plaintext too large"
         return (pow(self.g, pt, self.n_squared) * pow(self.r, self.n, self.n_squared)) % self.n_squared
 
     def encrypt_bytes(self, pt: bytes) -> bytes:
-        bytes_per_chunk = self.key_size // 8 
+        bytes_per_chunk = self.size // 8 
         enc_bytes = [ 
             Converters.int_to_bytes(
                 self.encrypt(Converters.bytes_to_int(chunk)),
@@ -55,7 +55,7 @@ class PaillierPrivateKey:
         self.n_squared = self.n**2
         self.lam = self.phi = (p - 1)*(q - 1)
         self.mu = pow(self.lam, -1, self.n)
-        self.key_size = size
+        self.size = size
 
     def decrypt(self, ct: int) -> int:
         return ((self._l_function(pow(ct, self.lam, self.n_squared))) * self.mu) % self.n
@@ -64,8 +64,8 @@ class PaillierPrivateKey:
         decrypted_bytes = [ 
             Converters.int_to_bytes(
                 self.decrypt(Converters.bytes_to_int(each)),
-                self.key_size // 8
-            ).strip(b'\x00') for each in chunks(ct, self.key_size // 4) 
+                self.size // 8
+            ).strip(b'\x00') for each in chunks(ct, self.size // 4) 
         ]
         return b"".join(decrypted_bytes) 
 
@@ -77,20 +77,20 @@ class PaillierPrivateKey:
     def _l_function(self, x):
         return (x - 1) // self.n
 
-def generate_key_pair(key_size=DEFAULT_BITS) -> Tuple[PaillierPublicKey, PaillierPrivateKey]:
+def generate_key_pair(size=DEFAULT_BITS) -> Tuple[PaillierPublicKey, PaillierPrivateKey]:
     p = q = n = None
     n_len = 0
 
-    while n_len != key_size:
-        p = q = prime_of_n_bits(key_size // 2)
+    while n_len != size:
+        p = q = prime_of_n_bits(size // 2)
         while q == p:
-            q = prime_of_n_bits(key_size // 2)
+            q = prime_of_n_bits(size // 2)
 
         n = p * q
         n_len = n.bit_length()
 
     r = gen_random_int(0, n)
-    public_key = PaillierPublicKey(n, r, key_size)
-    private_key = PaillierPrivateKey(p, q, key_size)
+    public_key = PaillierPublicKey(n, r, size)
+    private_key = PaillierPrivateKey(p, q, size)
 
     return public_key, private_key

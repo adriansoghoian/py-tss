@@ -413,7 +413,7 @@ class Participant():
         self.signing_state.delta_i %= self.party_parameters.ec_n
 
         # Compute sigma 
-        self.signing_state.sigma_i = self.signing_state.k * self.signing_state.w % self.party_parameters.ec_n
+        self.signing_state.sigma_i = (self.signing_state.k * self.signing_state.w) % self.party_parameters.ec_n
 
         mus = self.signing_state.mToA_outputs_as_initiator_2.values()
         nus = self.signing_state.mToA_outputs_as_receiver_2.values()
