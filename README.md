@@ -1,6 +1,6 @@
 ### Set up 
 
-This project currently has no dependencies outside the Python 3.6+ standard library. A `venv` directory is git-ignored by default, so feel free to use a virtual environment named as such. 
+The majority of this project has no dependencies outside the Python 3.6+ standard library. Experimental functionality in `encoding.py` has an external dependency, captured in requirements.txt, but that's not needed for running the protocol. A `venv` directory is git-ignored by default, so feel free to use a virtual environment named as such. 
 
 ### Implementation Notes 
 
