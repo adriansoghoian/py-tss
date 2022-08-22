@@ -57,6 +57,11 @@ class TestEllipticCurve(unittest.TestCase):
         signature: Signature = e.sign(z)
         self.assertTrue(signature.verify(z, pub))
 
+        # Test recovering public key 
+        recovered_key = signature.recover_public_key(z)
+        print(recovered_key)
+        self.assertTrue(signature.verify(z, recovered_key))
+
     def test_pem_encoding(self):
         sec = PrivateKey(gen_random_int(0, N), G, N)
         pub = sec.secret * G  # public point corresponding to e

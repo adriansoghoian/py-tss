@@ -1,6 +1,7 @@
 import unittest
 from pytss.common_math import (
-    compute_modular_inverse
+    compute_modular_inverse,
+    compute_modular_sqrt
 )
 
 class TestCommonMath(unittest.TestCase):
@@ -18,3 +19,6 @@ class TestCommonMath(unittest.TestCase):
         p = 115792089237316195423570985008687907852837564279074904382605163141518161494337
         expected = 77350129032275108437581484883529059659442577067104103137820664936133073361349
         self.assertEqual(compute_modular_inverse(n, p), expected)
+
+    def test_compute_modular_sqrt(self):
+        self.assertEqual(compute_modular_sqrt(223, 17), 6)

@@ -3,6 +3,13 @@ from dataclasses import dataclass
 from .common_crypto import (
     gen_random_int
 )
+from .utils import (
+    int_to_bytes_padded
+)
+from .common_math import (
+    compute_modular_sqrt,
+    compute_modular_inverse
+)
 
 @dataclass
 class PrimeGaloisField:
@@ -157,11 +164,31 @@ class Signature:
     N: int
 
     def verify(self, z: int, pub_key: Point) -> bool:
-        s_inv = pow(self.s, -1, self.N)
+        s_inv = compute_modular_inverse(self.s, self.N)
         u = (z * s_inv) % self.N
         v = (self.r * s_inv) % self.N
         
         return (u*self.G + v*pub_key).x.value == self.r
+
+    def recover_public_key(self, z: int) -> Point:
+        x = self.r
+        p = self.G.curve.field.prime
+
+        alpha = pow(x, 3, p) + self.G.curve.a.value * x + self.G.curve.b.value
+        alpha %= p
+
+        beta = compute_modular_sqrt(alpha, p)
+        y = beta if beta % 2 == 0 else p - beta
+
+        r1: Point = Point(x, y, self.G.curve)
+        return compute_modular_inverse(x, self.N) * (self.s * r1 + (-z % self.N) * self.G)
+
+    @property
+    def formatted(self):
+        r_bytes = int_to_bytes_padded(self.r, 32).hex()
+        s_bytes = int_to_bytes_padded(self.r, 32).hex()
+        return f'0x{r_bytes}{s_bytes}'
+
 
 @dataclass
 class PrivateKey:

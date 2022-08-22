@@ -19,3 +19,9 @@ class Converters:
 
 def int_to_hex_str(value: int, num_bits: int=256) -> str:
     return hex(value).zfill(num_bits)
+
+def int_to_bytes_padded(num: int, total_size: int) -> bytes:
+    return pad_scalar(num.to_bytes((num.bit_length() + 7) // 8 or 1, 'big'), total_size)
+
+def pad_scalar(scalar: bytes, size: int) -> bytes:
+    return (b'\x00' * (size - len(scalar))) + scalar
