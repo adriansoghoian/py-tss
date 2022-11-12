@@ -4,7 +4,7 @@ The majority of this project has no dependencies outside the Python 3.6+ standar
 
 ### Implementation 
 
-This is a modified implementation of [Goldfeder and Gennaro's 2020 Paper](https://eprint.iacr.org/2020/540.pdf), using MPC to generate and use keys for ECDSA signing / verification. 
+This is a modified, pure-Python implementation of [Goldfeder and Gennaro's 2020 Paper](https://eprint.iacr.org/2020/540.pdf), using MPC to generate and use keys for threshold ECDSA signing / verification. 
 
 The assumption here is that there are no adversarial parties participating in the protocol, and that we're only interested in the benefits of distributing the computation (ex. for meeting regulatory requirements around non-custody of digital assets). So, the implementation is a subset of what's in the paper (namely, many of the ZKP's used to identity / prevent malicious behavior were removed). 
 
@@ -14,6 +14,10 @@ Additionally, there are minimal, pure-Python implementations of some supporting 
 - [Shamir Secret Sharing](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing)
 - Elliptic curve arithmetic helpers 
 - Modular aithmetic helpers 
+
+### Disclaimer 
+
+Do NOT use any of this code in production systems. :) This is strictly for educational purposes, only. 
 
 ### Running Tests
 
