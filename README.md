@@ -1,6 +1,7 @@
-### Installation
 
-The majority of this project has no dependencies outside the Python 3.6+ standard library. Experimental functionality in `encoding.py` has an external dependency, captured in requirements.txt, but that's not needed for running the protocol. A `venv` directory is git-ignored by default, so feel free to use a virtual environment named as such. 
+### Disclaimer 
+
+Do NOT use any of this code in production systems. :) This is strictly for educational purposes, only. 
 
 ### Implementation 
 
@@ -15,9 +16,9 @@ Additionally, there are minimal, pure-Python implementations of some supporting 
 - Elliptic curve arithmetic helpers 
 - Modular aithmetic helpers 
 
-### Disclaimer 
+### Installation
 
-Do NOT use any of this code in production systems. :) This is strictly for educational purposes, only. 
+The majority of this project has no dependencies outside the Python 3.6+ standard library. Experimental functionality in `encoding.py` has an external dependency, captured in requirements.txt, but that's not needed for running the protocol. A `venv` directory is git-ignored by default, so feel free to use a virtual environment named as such. 
 
 ### Running Tests
 
@@ -26,3 +27,10 @@ The test case in test_gg20.py has an end-to-end test of the protocol, from key g
 `python -m unittest test.test_gg20` 
 
 There are units tests for the various supporting functionality as well
+
+### Contributing 
+
+Very open to any PRs covering:
+- Any bug fixes
+- Additional MPC-based threshold signing schemes 
+- Layering in ZKPs into gg20.py
