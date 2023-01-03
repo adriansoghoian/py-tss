@@ -28,6 +28,9 @@ from pytss.elliptic_curve import (
     secp256k1_generator,
     secp256k1_order
 )
+from pytss.gg20 import (
+    Parameters
+)
 
 params = Parameters(
     security_parameter=256,
