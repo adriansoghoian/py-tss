@@ -22,7 +22,7 @@ Additionally, there are minimal, pure-Python implementations of some supporting 
 
 Configure the parameters for the MPC protocol. For example, this configuration would create a "3-of-4" thresholding signing party using key shares suitable for signing ETH transactions. 
 
-```
+```python
 from pytss.elliptic_curve import (
     secp256k1,
     secp256k1_generator,
@@ -47,7 +47,7 @@ params = Parameters(
 
 Next, instantiate `Participant` objects used in the key generation ceremony and in signing. Each participant has a dependency on a type conforming to the `CommunicationDelegate` interface for broadcasting messages as well as sending p2p. For demo purposes, holding the participants in memory, a sample delegate could be as simple as: 
 
-```
+```python
 from pytss.gg20 import (
     CommunicationDelegate
 )
@@ -69,7 +69,7 @@ class TestDelegate(CommunicationDelegate):
 
 Instantiating the `Participant` set would then look like:
 
-```
+```python
 from pytss.gg20 import (
     Participant
 )
@@ -89,7 +89,7 @@ for i in range(1, params.party_size + 1):
 
 As simple as calling the `key_gen()` function on each participant:
 
-```
+```python
 for each in participants:
     each.key_gen()
     
@@ -101,7 +101,7 @@ pub_key = participants[0].pub_key()
 
 Since the parameters specify a 3-of-4 threshold, specify any subset of the 4 participants, and call 2 functions in turn -- `prepare_for_signing` and `sign`:
 
-```
+```python
 chosen_participant_ids = [1, 2, 3]
 message = gen_random_int(0, 2 ** params.security_parameter) # msg to sign 
 
