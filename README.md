@@ -5,7 +5,7 @@ Do not use any of this code in production systems. This is strictly for educatio
 
 ### Implementation 
 
-This is a modified, pure-Python implementation of [Goldfeder and Gennaro's 2020 Paper](https://eprint.iacr.org/2020/540.pdf), using MPC to generate and use keys for threshold ECDSA signing / verification. 
+This is a zero dependency, pure-Python implementation of [Goldfeder and Gennaro's 2020 Paper](https://eprint.iacr.org/2020/540.pdf), using MPC to generate and use keys for threshold ECDSA signing / verification. 
 
 The assumption here is that there are no adversarial parties participating in the protocol, and that we're only interested in the benefits of distributing the computation (ex. for meeting regulatory requirements around non-custody of digital assets). So, the implementation is a subset of what's in the paper (namely, many of the ZKP's used to identity / prevent malicious behavior were removed). 
 
