@@ -114,7 +114,7 @@ for each in signing_participants:
 for each in signing_participants:
     each.sign()
     
-signature = signing_participants[0] # extract signature from any participant
+signature = signing_participants[0].signature() # extract signature from any participant
 ```
 
 ### Installation
