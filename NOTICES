@@ -1,1 +1,4 @@
 The implementation in pytss/elliptic_curve.py is taken from this very helpful tutorial: https://onyb.gitbook.io/roll-your-own-crypto/ with some minor modifications.
+
+The modular square root computation in pytss/common_math.py is taken from this blog post: https://eli.thegreenplace.net/2009/03/07/computing-modular-square-roots-in-python
+

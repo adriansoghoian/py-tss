@@ -2,6 +2,8 @@ from collections import namedtuple
 
 ExtendedEuclidianResult = namedtuple("ExtendedEuclidianResult", "bezout_x bezout_y gcd")
 
+# This implementation is taken from: https://eli.thegreenplace.net/2009/03/07/computing-modular-square-roots-in-python
+
 def extended_euclidian(a, b):
     old_r, r = a, b 
     old_s, s = 1, 0 
